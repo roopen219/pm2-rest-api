@@ -7,7 +7,9 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "build": "bun build src/index.ts --outfile a.out --target=bun-darwin-arm64",
+    "build-linux": "bun build src/index.ts --outfile a.out --compile --target=bun-linux-x64"
   },
   "dependencies": {
     "hono": "4.7.5"
