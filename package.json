@@ -31,5 +31,6 @@
     "*.{ts,tsx}": [
       "bun lint:fix"
     ]
-  }
+  },
+  "license": "MIT"
 }
