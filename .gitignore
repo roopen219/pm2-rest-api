@@ -2,3 +2,5 @@
 node_modules/
 .env
 .DS_Store
+pm2-rest-api
+pm2-rest-api-linux
