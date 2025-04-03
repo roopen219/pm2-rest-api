@@ -17,9 +17,11 @@ A RESTful API wrapper for PM2 process manager, built with Bun and Hono. This API
 
 ## Installation
 
+### Option 1: From Source
+
 1. Clone the repository:
 ```sh
-git clone https://github.com/yourusername/pm2-rest-api.git
+git clone https://github.com/roopen219/pm2-rest-api.git
 cd pm2-rest-api
 ```
 
@@ -34,14 +36,65 @@ API_TOKEN=your-secure-token-here
 PORT=3000  # Optional, defaults to 3000
 ```
 
+### Option 2: Using Pre-built Releases
+
+1. Go to the [Releases](https://github.com/roopen219/pm2-rest-api/releases) page
+2. Download the appropriate executable for your platform:
+   - For macOS (ARM64): `pm2-rest-api`
+   - For Linux (x64): `pm2-rest-api-linux`
+3. Make the file executable:
+```sh
+# For macOS
+chmod +x pm2-rest-api
+
+# For Linux
+chmod +x pm2-rest-api-linux
+```
+4. Create a `.env` file in the same directory as the executable:
+```sh
+API_TOKEN=your-secure-token-here
+PORT=3000  # Optional, defaults to 3000
+```
+
 ## Running the Application
 
-Development mode:
+### Development Mode
 ```sh
 bun run dev
 ```
 
 The server will start at http://localhost:3000
+
+### Standalone Executable
+
+You can either use the pre-built releases or build the executable yourself:
+
+#### Building from Source
+
+##### For macOS (ARM64)
+```sh
+bun run build
+```
+This will create a `pm2-rest-api` executable in the root directory.
+
+##### For Linux (x64)
+```sh
+bun run build-linux
+```
+This will create a `pm2-rest-api-linux` executable in the root directory.
+
+#### Running the Executable
+
+1. Run the executable:
+```sh
+# For macOS
+./pm2-rest-api
+
+# For Linux
+./pm2-rest-api-linux
+```
+
+The server will start at http://localhost:3000 (or the port specified in your .env file).
 
 ## API Endpoints
 
