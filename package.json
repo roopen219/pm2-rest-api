@@ -1,6 +1,32 @@
 {
   "name": "pm2-rest-api",
+  "version": "1.0.0",
+  "description": "A RESTful API wrapper for PM2 process manager, built with Bun and Hono. Manage your PM2 processes remotely through HTTP endpoints.",
   "type": "module",
+  "keywords": [
+    "pm2",
+    "rest-api",
+    "process-manager",
+    "bun",
+    "hono",
+    "typescript",
+    "api",
+    "process",
+    "monitoring",
+    "management"
+  ],
+  "author": {
+    "name": "Roopendra Talekar",
+    "email": "hi@roopi.me"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roopen219/pm2-rest-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/roopen219/pm2-rest-api/issues"
+  },
+  "homepage": "https://github.com/roopen219/pm2-rest-api#readme",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "lint": "eslint . --ext .ts",
