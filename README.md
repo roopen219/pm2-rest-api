@@ -40,16 +40,19 @@ PORT=3000  # Optional, defaults to 3000
 
 1. Go to the [Releases](https://github.com/roopen219/pm2-rest-api/releases) page
 2. Download the appropriate executable for your platform:
-   - For macOS (ARM64): `pm2-rest-api`
-   - For Linux (x64): `pm2-rest-api-linux`
+   - For macOS (ARM64): `pm2-rest-api-vX.Y.Z`
+   - For Linux (x64): `pm2-rest-api-linux-vX.Y.Z`
+   Where `X.Y.Z` is the version number (e.g., v1.0.0)
+
 3. Make the file executable:
 ```sh
 # For macOS
-chmod +x pm2-rest-api
+chmod +x pm2-rest-api-vX.Y.Z
 
 # For Linux
-chmod +x pm2-rest-api-linux
+chmod +x pm2-rest-api-linux-vX.Y.Z
 ```
+
 4. Create a `.env` file in the same directory as the executable:
 ```sh
 API_TOKEN=your-secure-token-here
