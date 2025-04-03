@@ -13,6 +13,9 @@ export default [
         ecmaVersion: 'latest',
         sourceType: 'module',
       },
+      globals: {
+        bun: true
+      }
     },
     plugins: {
       '@typescript-eslint': tseslint,

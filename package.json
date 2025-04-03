@@ -8,11 +8,13 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "prepare": "husky",
-    "build": "bun build src/index.ts --outfile a.out --target=bun-darwin-arm64",
-    "build-linux": "bun build src/index.ts --outfile a.out --compile --target=bun-linux-x64"
+    "build": "bun build src/index.ts --outfile pm2-rest-api --target=bun-darwin-arm64",
+    "build-linux": "bun build src/index.ts --outfile pm2-rest-api-linux --target=bun-linux-x64"
   },
   "dependencies": {
-    "hono": "4.7.5"
+    "@logdna/tail-file": "4.0.2",
+    "hono": "4.7.5",
+    "pm2": "6.0.5"
   },
   "devDependencies": {
     "@types/bun": "latest",
