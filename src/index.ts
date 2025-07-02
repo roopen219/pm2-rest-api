@@ -1,8 +1,9 @@
 import { Hono } from 'hono'
-import { bearerAuth } from 'hono/bearer-auth'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { secureHeaders } from 'hono/secure-headers'
+import { authMiddleware } from './middleware/auth'
+import namespaceRouter from './namespace/routes'
 import pm2Router from './pm2/routes'
 
 declare const process: {
@@ -24,16 +25,13 @@ const app = new Hono({
 app.use('*', logger())
 app.use('*', cors())
 app.use('*', secureHeaders())
-// Protected routes with Bearer Auth
-const token = process.env.API_TOKEN
-if (!token) {
-  throw new Error('API_TOKEN environment variable is required')
-}
-
-app.use('/api/pm2/*', bearerAuth({ token }))
+// Protected routes with custom auth middleware
+app.use('/api/pm2/*', authMiddleware)
+app.use('/api/namespace/*', authMiddleware)
 
 // Routes
 app.route('/api/pm2', pm2Router)
+app.route('/api/namespace', namespaceRouter)
 
 // Health check
 app.get('/', (c) => c.json({ status: 'ok' }))

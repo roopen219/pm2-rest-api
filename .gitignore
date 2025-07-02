@@ -4,3 +4,4 @@ node_modules/
 .DS_Store
 pm2-rest-api
 pm2-rest-api-linux
+namespace_tokens.db

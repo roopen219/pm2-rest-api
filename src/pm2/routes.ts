@@ -8,7 +8,8 @@ const pm2Router = new Hono()
 // List all processes
 pm2Router.get('/', async (c) => {
   try {
-    const processes = await pm2Service.list()
+    const namespace = c.get('namespace')
+    const processes = await pm2Service.list(namespace)
     return c.json(processes)
   } catch (error) {
     return c.json(
@@ -22,7 +23,8 @@ pm2Router.get('/', async (c) => {
 pm2Router.get('/:name', async (c) => {
   try {
     const name = c.req.param('name')
-    const process = await pm2Service.describe(name)
+    const namespace = c.get('namespace')
+    const process = await pm2Service.describe(name, namespace)
     return c.json(process)
   } catch (error) {
     return c.json(
@@ -36,7 +38,8 @@ pm2Router.get('/:name', async (c) => {
 pm2Router.post('/', async (c) => {
   try {
     const process = await c.req.json<pm2.StartOptions>()
-    const result = await pm2Service.start(process)
+    const namespace = c.get('namespace')
+    const result = await pm2Service.start(process, namespace)
     return c.json(result)
   } catch (error) {
     return c.json(
@@ -50,7 +53,8 @@ pm2Router.post('/', async (c) => {
 pm2Router.post('/:name/stop', async (c) => {
   try {
     const name = c.req.param('name')
-    await pm2Service.stop(name)
+    const namespace = c.get('namespace')
+    await pm2Service.stop(name, namespace)
     return c.json({ message: `Process ${name} stopped successfully` })
   } catch (error) {
     return c.json(
@@ -64,7 +68,8 @@ pm2Router.post('/:name/stop', async (c) => {
 pm2Router.post('/:name/restart', async (c) => {
   try {
     const name = c.req.param('name')
-    await pm2Service.restart(name)
+    const namespace = c.get('namespace')
+    await pm2Service.restart(name, namespace)
     return c.json({ message: `Process ${name} restarted successfully` })
   } catch (error) {
     return c.json(
@@ -78,7 +83,8 @@ pm2Router.post('/:name/restart', async (c) => {
 pm2Router.post('/:name/reload', async (c) => {
   try {
     const name = c.req.param('name')
-    await pm2Service.reload(name)
+    const namespace = c.get('namespace')
+    await pm2Service.reload(name, namespace)
     return c.json({ message: `Process ${name} reloaded successfully` })
   } catch (error) {
     return c.json(
@@ -92,7 +98,8 @@ pm2Router.post('/:name/reload', async (c) => {
 pm2Router.delete('/:name', async (c) => {
   try {
     const name = c.req.param('name')
-    await pm2Service.delete(name)
+    const namespace = c.get('namespace')
+    await pm2Service.delete(name, namespace)
     return c.json({ message: `Process ${name} deleted successfully` })
   } catch (error) {
     return c.json(
@@ -107,7 +114,8 @@ pm2Router.get('/:name/logs', async (c) => {
   try {
     const name = c.req.param('name')
     const lines = parseInt(c.req.query('lines') || '100')
-    const logs = await pm2Service.logs(name, lines)
+    const namespace = c.get('namespace')
+    const logs = await pm2Service.logs(name, lines, namespace)
     return c.json(logs)
   } catch (error) {
     return c.json(
@@ -120,6 +128,7 @@ pm2Router.get('/:name/logs', async (c) => {
 // Stream process logs
 pm2Router.get('/:name/logs/stream', async (c) => {
   const name = c.req.param('name')
+  const namespace = c.get('namespace')
 
   return streamSSE(c, async (stream) => {
     try {
@@ -135,20 +144,24 @@ pm2Router.get('/:name/logs/stream', async (c) => {
         event: 'status',
       })
 
-      const cleanup = await pm2Service.streamLogs(name, (data) => {
-        if (data.out) {
-          stream.writeSSE({
-            data: `${data.out}`,
-            event: 'message',
-          })
-        }
-        if (data.error) {
-          stream.writeSSE({
-            data: `${data.error}`,
-            event: 'message',
-          })
-        }
-      })
+      const cleanup = await pm2Service.streamLogs(
+        name,
+        (data) => {
+          if (data.out) {
+            stream.writeSSE({
+              data: `${data.out}`,
+              event: 'message',
+            })
+          }
+          if (data.error) {
+            stream.writeSSE({
+              data: `${data.error}`,
+              event: 'message',
+            })
+          }
+        },
+        namespace,
+      )
 
       // Clean up watchers when the connection is closed
       stream.onAbort(() => {

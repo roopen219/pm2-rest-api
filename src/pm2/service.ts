@@ -32,7 +32,7 @@ class PM2Service {
     }
   }
 
-  public async list(): Promise<pm2.ProcessDescription[]> {
+  public async list(namespace?: string): Promise<pm2.ProcessDescription[]> {
     await this.connect()
     return new Promise((resolve, reject) => {
       pm2.list((err, list) => {
@@ -40,58 +40,105 @@ class PM2Service {
           reject(err)
           return
         }
-        resolve(list)
+
+        // Filter by namespace if provided
+        if (namespace) {
+          const filteredList = list.filter((process) => {
+            return (process.pm2_env as any)?.namespace === namespace
+          })
+          resolve(filteredList)
+        } else {
+          resolve(list)
+        }
       })
     })
   }
 
   public async start(
     process: pm2.StartOptions,
+    namespace?: string,
   ): Promise<pm2.ProcessDescription> {
     await this.connect()
-    return new Promise((resolve, reject) => {
+    const createdProcess = (await new Promise((resolve, reject) => {
       const startOptions: pm2.StartOptions = {
         ...process,
         min_uptime: process.min_uptime ? Number(process.min_uptime) : undefined,
       }
+
+      // Add namespace to pm2_env if namespace is provided
+      if (namespace) {
+        startOptions.namespace = namespace
+      }
+
       pm2.start(startOptions, (err, proc) => {
         if (err) {
           reject(err)
           return
         }
-        resolve(proc as unknown as pm2.ProcessDescription)
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        resolve(proc[0])
       })
-    })
+    })) as any
+    return this.describe(createdProcess.pm2_env.pm_id as string)
   }
 
-  public async stop(name: string): Promise<void> {
+  public async stop(
+    name: string,
+    namespace?: string,
+  ): Promise<pm2.ProcessDescription> {
     await this.connect()
+
+    // First validate that the process exists in the correct namespace
+    if (namespace) {
+      await this.describe(name, namespace)
+    }
+
     return new Promise((resolve, reject) => {
       pm2.stop(name, (err) => {
         if (err) {
           reject(err)
           return
         }
-        resolve()
+        resolve(true)
       })
+    }).then(() => {
+      return this.describe(name)
     })
   }
 
-  public async restart(name: string): Promise<void> {
+  public async restart(
+    name: string,
+    namespace?: string,
+  ): Promise<pm2.ProcessDescription> {
     await this.connect()
+
+    // First validate that the process exists in the correct namespace
+    if (namespace) {
+      await this.describe(name, namespace)
+    }
+
     return new Promise((resolve, reject) => {
       pm2.restart(name, (err) => {
         if (err) {
           reject(err)
           return
         }
-        resolve()
+        resolve(true)
       })
+    }).then(() => {
+      return this.describe(name)
     })
   }
 
-  public async delete(name: string): Promise<void> {
+  public async delete(name: string, namespace?: string): Promise<void> {
     await this.connect()
+
+    // First validate that the process exists in the correct namespace
+    if (namespace) {
+      await this.describe(name, namespace)
+    }
+
     return new Promise((resolve, reject) => {
       pm2.delete(name, (err) => {
         if (err) {
@@ -103,22 +150,34 @@ class PM2Service {
     })
   }
 
-  public async reload(name: string): Promise<void> {
+  public async reload(
+    name: string,
+    namespace?: string,
+  ): Promise<pm2.ProcessDescription> {
     await this.connect()
+
+    // First validate that the process exists in the correct namespace
+    if (namespace) {
+      await this.describe(name, namespace)
+    }
+
     return new Promise((resolve, reject) => {
       pm2.reload(name, (err) => {
         if (err) {
           reject(err)
           return
         }
-        resolve()
+        resolve(true)
       })
+    }).then(() => {
+      return this.describe(name)
     })
   }
 
   public async logs(
     name: string,
     lines: number = 100,
+    namespace?: string,
   ): Promise<{ out: string[]; error: string[] }> {
     await this.connect()
     return new Promise((resolve, reject) => {
@@ -132,6 +191,17 @@ class PM2Service {
           return
         }
         const process = list[0]
+
+        // Verify namespace access if namespace is provided
+        if (namespace) {
+          const processNamespace = (process.pm2_env as any)?.namespace
+          if (processNamespace !== namespace) {
+            reject(
+              new Error(`Process ${name} not found in namespace ${namespace}`),
+            )
+            return
+          }
+        }
 
         try {
           const outLogs = process.pm2_env?.pm_out_log_path
@@ -224,7 +294,10 @@ class PM2Service {
     }
   }
 
-  public async describe(name: string): Promise<pm2.ProcessDescription> {
+  public async describe(
+    name: string,
+    namespace?: string,
+  ): Promise<pm2.ProcessDescription> {
     await this.connect()
     return new Promise((resolve, reject) => {
       pm2.describe(name, (err, list) => {
@@ -236,7 +309,21 @@ class PM2Service {
           reject(new Error(`Process ${name} not found`))
           return
         }
-        resolve(list[0])
+
+        const process = list[0]
+
+        // Verify namespace access if namespace is provided
+        if (namespace) {
+          const processNamespace = (process.pm2_env as any)?.namespace
+          if (processNamespace !== namespace) {
+            reject(
+              new Error(`Process ${name} not found in namespace ${namespace}`),
+            )
+            return
+          }
+        }
+
+        resolve(process)
       })
     })
   }
@@ -244,6 +331,7 @@ class PM2Service {
   public async streamLogs(
     name: string,
     callback: (data: { out: string; error: string }) => void,
+    namespace?: string,
   ): Promise<() => void> {
     await this.connect()
     return new Promise((resolve, reject) => {
@@ -257,6 +345,17 @@ class PM2Service {
           return
         }
         const process = list[0]
+
+        // Verify namespace access if namespace is provided
+        if (namespace) {
+          const processNamespace = (process.pm2_env as any)?.namespace
+          if (processNamespace !== namespace) {
+            reject(
+              new Error(`Process ${name} not found in namespace ${namespace}`),
+            )
+            return
+          }
+        }
 
         const outLogPath = process.pm2_env?.pm_out_log_path
         const errorLogPath = process.pm2_env?.pm_err_log_path

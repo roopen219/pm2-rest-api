@@ -5,6 +5,7 @@ A RESTful API wrapper for PM2 process manager, built with Bun and Hono. This API
 ## Features
 
 - 🔒 Secure API with Bearer token authentication
+- 🏷️ **NEW: Namespace support for multi-tenant isolation**
 - 🌐 CORS enabled
 - 📝 Process management (start, stop, restart, reload, delete)
 - 📊 Process monitoring and status information
@@ -101,6 +102,15 @@ The server will start at http://localhost:3000 (or the port specified in your .e
 ## API Endpoints
 
 All endpoints are prefixed with `/api/pm2` and require Bearer token authentication.
+
+### Namespace Feature
+
+The API now supports namespaces for multi-tenant isolation. See [NAMESPACE_FEATURE.md](./NAMESPACE_FEATURE.md) for detailed documentation.
+
+**Quick Start:**
+1. Use the root token to create namespace tokens: `POST /api/namespace`
+2. Use namespace tokens to manage isolated PM2 processes
+3. Each namespace token can only access processes within its namespace
 
 ### Authentication
 Include your API token in the request header:
