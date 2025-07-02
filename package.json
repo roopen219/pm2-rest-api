@@ -1,6 +1,6 @@
 {
   "name": "pm2-rest-api",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A RESTful API wrapper for PM2 process manager, built with Bun and Hono. Manage your PM2 processes remotely through HTTP endpoints.",
   "type": "module",
   "keywords": [
