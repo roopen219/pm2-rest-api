@@ -67,7 +67,13 @@ class PM2Service {
 
       // Add namespace to pm2_env if namespace is provided
       if (namespace) {
-        startOptions.namespace = namespace
+        if (startOptions.env) {
+          startOptions.env.namespace = namespace
+        } else {
+          startOptions.env = {
+            namespace,
+          }
+        }
       }
 
       pm2.start(startOptions, (err, proc) => {
